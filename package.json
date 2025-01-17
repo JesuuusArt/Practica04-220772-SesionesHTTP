@@ -1,0 +1,30 @@
+{
+  "name": "practica04-220772-sesioneshttp",
+  "version": "1.0.0",
+  "description": "Este proyecto consiste en la creación de una aplicación web basada en el TechStack de Node.js y Express, diseñada para gestionar sesiones HTTP.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JesuuusArt/Practica04-220772-SesionesHTTP.git"
+  },
+  "keywords": [],
+  "author": "Jesus Alejandro Artiaga Morales",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JesuuusArt/Practica04-220772-SesionesHTTP/issues"
+  },
+  "homepage": "https://github.com/JesuuusArt/Practica04-220772-SesionesHTTP#readme",
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "macaddress": "^0.5.3",
+    "moment-timezone": "^0.5.46",
+    "os": "^0.1.2",
+    "uuid": "^11.0.5"
+  }
+}
