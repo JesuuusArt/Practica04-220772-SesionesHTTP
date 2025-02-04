@@ -22,7 +22,7 @@ app.use(
 );
 
 // Zona horaria por defecto
-const TIMEZONE = "America/Mexico_City"; // Ajusta según tu región
+const TIMEZONE = "America/Mexico_City";
 
 
 // Sesiones almacenadas en memoria
