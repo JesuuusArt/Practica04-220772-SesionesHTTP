@@ -5,7 +5,7 @@ import moment from "moment-timezone";
 import { v4 as uuidv4 } from "uuid";
 import cors from "cors";
 import os from "os";
-import './connection.js'
+
 
 const app = express();
 app.use(express.json());
@@ -21,17 +21,12 @@ app.use(
     })
 );
 
-// Zona horaria por defecto
 const TIMEZONE = "America/Mexico_City";
 
-
-// Sesiones almacenadas en memoria
 const sessions = {};
 
-// Tiempo máximo de inactividad en milisegundos (2 minutos)
-const MAX_INACTIVITY_TIME = 2 * 60 * 1000;
+const MAX_INACTIVITY_TIME = 10 * 60 * 1000;
 
-// Intervalo para limpiar sesiones inactivas (cada minuto)
 setInterval(() => {
     const now = moment().tz(TIMEZONE);
     for (const sessionId in sessions) {
@@ -44,7 +39,7 @@ setInterval(() => {
             delete sessions[sessionId];
         }
     }
-}, 60 * 1000); // Revisión cada minuto
+}, 60 * 1000);
 
 
 // Función de utilidad para obtener la IP del cliente
@@ -54,15 +49,13 @@ const getClientIp = (req) => {
         req.socket?.remoteAddress ||
         req.connection?.socket?.remoteAddress;
 
-    // Si la IP tiene el prefijo "::ffff:", eliminarlo para obtener solo IPv4
     if (ip && ip.startsWith("::ffff:")) {
         ip = ip.substring(7);
     }
 
-    // Si la IP es 127.0.0.1, intentar obtener la IP real de la red
     if (ip === "127.0.0.1" || ip === "0.0.0.0") {
         const { serverIp } = getServerNetworkInfo();
-        ip = serverIp; // Reemplazar con la IP de la red local
+        ip = serverIp;
     }
 
     return ip;
@@ -91,14 +84,14 @@ app.post("/login", (req, res) => {
 
     const sessionId = uuidv4();
     const now = moment().tz(TIMEZONE);
-    const clientIp = getClientIp(req); // Obtener la IP del cliente
+    const clientIp = getClientIp(req);
 
     sessions[sessionId] = {
         sessionId,
         email,
         nickname,
         macAddress,
-        ip: clientIp, // Guardar la IP del cliente
+        ip: clientIp,
         createdAt: now.format("YYYY-MM-DD HH:mm:ss"),
         lastAccessedAt: now,
     };
@@ -164,9 +157,11 @@ app.get("/status", (req, res) => {
 
     const now = moment().tz(TIMEZONE);
     const session = sessions[sessionId];
-    const lastAccessedAt = moment(session.lastAccessedAt);
+    const lastAccessedAt = moment(session.lastAccessedAt).tz(TIMEZONE);
+    const sessionCreatedAt = moment(session.createdAt).tz(TIMEZONE);
+    
     const inactivityDuration = moment.duration(now.diff(lastAccessedAt));
-    const sessionDuration = moment.duration(now.diff(moment(session.createdAt)));
+    const sessionDuration = moment.duration(now.diff(sessionCreatedAt));
 
     res.status(200).json({
         message: "Sesión activa.",
@@ -174,8 +169,10 @@ app.get("/status", (req, res) => {
             ...session,
             serverIp,
             serverMac, // MAC del servidor
-            inactivity: `${inactivityDuration.minutes()} minutos y ${inactivityDuration.seconds()} segundos`,
+            inactivity:`${inactivityDuration.minutes()} minutos y ${inactivityDuration.seconds()} segundos`,
             totalDuration: `${sessionDuration.hours()} horas, ${sessionDuration.minutes()} minutos y ${sessionDuration.seconds()} segundos`,
+            createdAt: sessionCreatedAt.format("YYYY-MM-DD HH:mm:ss"),
+            lastAccessedAt: lastAccessedAt.format("YYYY-MM-DD HH:mm:ss"),
         },
     });
 });
@@ -207,7 +204,7 @@ app.get("/sessions", (req, res) => {
             createdAt: session.createdAt,
             inactivity: `${inactivityDuration.minutes()} minutos y ${inactivityDuration.seconds()} segundos`,
             totalDuration: `${sessionDuration.hours()} horas, ${sessionDuration.minutes()} minutos y ${sessionDuration.seconds()} segundo`,
-            lastAccessedAt: lastAccessedAt.format("YYYY-MM-DD HH:mm:ss"),
+            lastAccessedAt: moment(lastAccessedAt).tz("America/Mexico_City").format("YYYY-MM-DD HH:mm:ss")
         };
     });
 
